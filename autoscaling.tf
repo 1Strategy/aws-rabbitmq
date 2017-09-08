@@ -24,6 +24,7 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_launch_configuration" "rabbit_lc" {
+  name_prefix = "rbtmq-"
   associate_public_ip_address = false
   enable_monitoring = false
   image_id      = "${data.aws_ami.ubuntu.id}"
@@ -45,6 +46,7 @@ resource "aws_launch_configuration" "rabbit_lc" {
 }
 
 resource "aws_autoscaling_group" "rabbit_asg" {
+  name_prefix = "rbtmq-"
   launch_configuration = "${aws_launch_configuration.rabbit_lc.name}"
   min_size             = 1
   max_size             = 1
@@ -75,6 +77,7 @@ tags = [
 
 resource "aws_alb" "rabbit_alb" {
   # name            = "test-alb-tf"
+  name_prefix = "rbtmq-"
   internal        = false
   security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
   subnets         = ["${var.lb_subnets}"]
