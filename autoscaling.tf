@@ -48,39 +48,47 @@ resource "aws_autoscaling_group" "rabbit_asg" {
   launch_configuration = "${aws_launch_configuration.rabbit_lc.name}"
   min_size             = 1
   max_size             = 1
-  vpc_zone_identifier = ["subnet-ef60aba6", "subnet-ef60aba6"]
+  vpc_zone_identifier = "${var.lb_subnets}"
 
-  tag {
-    key                 = "Name"
-    value               = "chef-elb-resource-test"
-    propagate_at_launch = true
-  }
-
-  tag {
-    key                 = "Owner"
-    value               = "Ireton"
-    propagate_at_launch = true
-  }
+tags = [
+    {
+      key                 = "Name"
+      value               = "BIDS VXP RabbitMQ node"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Project-ID"
+      value               = "${var.project_id}"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Team"
+      value               = "${var.team}"
+      propagate_at_launch = true
+    },
+]
 
   lifecycle {
     create_before_destroy = true
   }
 }
 
-# resource "aws_alb" "rabbit_alb" {
-#   name            = "test-alb-tf"
-#   internal        = false
-#   security_groups = ["${aws_security_group.alb_sg.id}"]
-#   subnets         = ["${aws_subnet.public.*.id}"]
+resource "aws_alb" "rabbit_alb" {
+  # name            = "test-alb-tf"
+  internal        = false
+  security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
+  subnets         = ["${var.lb_subnets}"]
 
-#   enable_deletion_protection = true
+  enable_deletion_protection = true
 
-#   access_logs {
-#     bucket = "${aws_s3_bucket.alb_logs.bucket}"
-#     prefix = "test-alb"
-#   }
+  # access_logs {
+  #   bucket = "${aws_s3_bucket.alb_logs.bucket}"
+  #   prefix = "test-alb"
+  # }
 
-#   tags {
-#     Environment = "production"
-#   }
-# }
+  tags {
+    Name = "BIDS VXP RabbitMQ load balancer"
+    Project-ID = "${var.project_id}"
+    Team = "${var.team}"
+  }
+}
