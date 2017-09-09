@@ -51,6 +51,7 @@ resource "aws_autoscaling_group" "rabbit_asg" {
   min_size             = 1
   max_size             = 1
   vpc_zone_identifier = "${var.lb_subnets}"
+  target_group_arns   = ["${aws_alb_target_group.rabbit_alb_tg.arn}"]
 
 tags = [
     {
@@ -93,5 +94,38 @@ resource "aws_alb" "rabbit_alb" {
     Name = "BIDS VXP RabbitMQ load balancer"
     Project-ID = "${var.project_id}"
     Team = "${var.team}"
+  }
+}
+
+resource "aws_alb_target_group" "rabbit_alb_tg" {
+  name_prefix = "rbtmq-"
+  port     = 5672
+  protocol = "HTTP"
+  vpc_id   = "${var.vpc}"
+  
+  health_check {
+    interval = "30"
+    path = "/"
+    port = "5672"
+    protocol = "HTTP"
+    timeout = "5"
+  }  
+
+  tags {
+    Name = "BIDS VXP RabbitMQ load balancer"
+    Project-ID = "${var.project_id}"
+    Team = "${var.team}"
+  }
+  
+}
+
+resource "aws_alb_listener" "rabbit_alb_l" {
+  load_balancer_arn = "${aws_alb.rabbit_alb.arn}"
+  port              = "5672"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = "${aws_alb_target_group.rabbit_alb_tg.arn}"
+    type             = "forward"
   }
 }
