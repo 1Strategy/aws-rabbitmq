@@ -61,6 +61,16 @@ resource "aws_security_group_rule" "rabbitmq_distribution_port" {
   source_security_group_id = "${aws_security_group.rabbit_nodes_sg.id}"
 }
 
+
+resource "aws_security_group_rule" "rabbitmq_alb_forwarding_port" {
+  type = "ingress"
+  from_port = 5671
+  to_port = 5672
+  protocol = "tcp"
+  security_group_id = "${aws_security_group.rabbit_nodes_sg.id}"
+  source_security_group_id = "${aws_security_group.rabbit_lb_sg.id}"
+}
+
 resource "aws_security_group_rule" "allow_all" {
   type = "egress"
   from_port = 0
