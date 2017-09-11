@@ -51,7 +51,7 @@ resource "aws_autoscaling_group" "rabbit_asg" {
   min_size             = 1
   max_size             = 1
   vpc_zone_identifier = "${var.lb_subnets}"
-  target_group_arns   = ["${aws_alb_target_group.rabbit_alb_tg.arn}"]
+  load_balancers    = ["${aws_elb.rabbit_elb.id}"]
 
 tags = [
     {
@@ -76,56 +76,95 @@ tags = [
   }
 }
 
-resource "aws_alb" "rabbit_alb" {
-  # name            = "test-alb-tf"
+resource "aws_elb" "rabbit_elb" {
   name_prefix = "rbtmq-"
-  internal        = false
-  security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
   subnets         = ["${var.lb_subnets}"]
-
-  enable_deletion_protection = true
+  security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
+  internal        = false
 
   # access_logs {
-  #   bucket = "${aws_s3_bucket.alb_logs.bucket}"
-  #   prefix = "test-alb"
+  #   bucket        = "foo"
+  #   bucket_prefix = "bar"
+  #   interval      = 60
   # }
 
-  tags {
-    Name = "BIDS VXP RabbitMQ load balancer"
-    Project-ID = "${var.project_id}"
-    Team = "${var.team}"
+  listener {
+    instance_port     = 5672
+    instance_protocol = "tcp"
+    lb_port           = 5672
+    lb_protocol       = "tcp"
   }
-}
 
-resource "aws_alb_target_group" "rabbit_alb_tg" {
-  name_prefix = "rbtmq-"
-  port     = 5672
-  protocol = "HTTP"
-  vpc_id   = "${var.vpc}"
-  
   health_check {
-    interval = "30"
-    path = "/"
-    port = "5672"
-    protocol = "HTTP"
-    timeout = "5"
-  }  
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "TCP:5672"
+    interval            = 30
+  }
 
-  tags {
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
+    tags {
     Name = "BIDS VXP RabbitMQ load balancer"
     Project-ID = "${var.project_id}"
     Team = "${var.team}"
   }
+}
+
+# resource "aws_alb" "rabbit_alb" {
+#   # name            = "test-alb-tf"
+#   name_prefix = "rbtmq-"
+#   internal        = false
+#   security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
+#   subnets         = ["${var.lb_subnets}"]
+
+#   enable_deletion_protection = true
+
+#   # access_logs {
+#   #   bucket = "${aws_s3_bucket.alb_logs.bucket}"
+#   #   prefix = "test-alb"
+#   # }
+
+#   tags {
+#     Name = "BIDS VXP RabbitMQ load balancer"
+#     Project-ID = "${var.project_id}"
+#     Team = "${var.team}"
+#   }
+# }
+
+# resource "aws_alb_target_group" "rabbit_alb_tg" {
+#   name_prefix = "rbtmq-"
+#   port     = 5672
+#   protocol = "HTTP"
+#   vpc_id   = "${var.vpc}"
   
-}
+#   health_check {
+#     interval = "30"
+#     path = "/"
+#     port = "5672"
+#     protocol = "HTTP"
+#     timeout = "5"
+#   }  
 
-resource "aws_alb_listener" "rabbit_alb_l" {
-  load_balancer_arn = "${aws_alb.rabbit_alb.arn}"
-  port              = "5672"
-  protocol          = "HTTP"
+#   tags {
+#     Name = "BIDS VXP RabbitMQ load balancer"
+#     Project-ID = "${var.project_id}"
+#     Team = "${var.team}"
+#   }
+  
+# }
 
-  default_action {
-    target_group_arn = "${aws_alb_target_group.rabbit_alb_tg.arn}"
-    type             = "forward"
-  }
-}
+# resource "aws_alb_listener" "rabbit_alb_l" {
+#   load_balancer_arn = "${aws_alb.rabbit_alb.arn}"
+#   port              = "5672"
+#   protocol          = "HTTP"
+
+#   default_action {
+#     target_group_arn = "${aws_alb_target_group.rabbit_alb_tg.arn}"
+#     type             = "forward"
+#   }
+# }
