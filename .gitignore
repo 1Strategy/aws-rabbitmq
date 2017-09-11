@@ -7,5 +7,4 @@
 .terraform/
 
 # Terraform AWS credentials
-provider.tf
 sandbox.tfvars
