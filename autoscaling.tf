@@ -29,7 +29,7 @@ resource "aws_launch_configuration" "rabbit_lc" {
   enable_monitoring = false
   image_id      = "${data.aws_ami.ubuntu.id}"
   instance_type = "t2.micro"
-  key_name = "dougireton"
+  key_name = "${var.ec2_keypair}"
   security_groups = ["${aws_security_group.rabbit_nodes_sg.id}"]
 
   user_data = "${file("userdata.sh")}"
