@@ -106,6 +106,13 @@ resource "aws_elb" "rabbit_elb" {
     lb_protocol       = "tcp"
   }
 
+  listener {
+    instance_port     = 15672
+    instance_protocol = "tcp"
+    lb_port           = 15672
+    lb_protocol       = "tcp"
+  }
+
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
