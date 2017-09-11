@@ -1,0 +1,19 @@
+{
+    "Id": "ELB_Access_Policy",
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "Stmt1429136633762",
+        "Action": [
+          "s3:PutObject"
+        ],
+        "Effect": "Allow",
+        "Resource": "arn:aws:s3:::1s-load-balancer-access-logs/rabbitmq/AWSLogs/842337631775/*",
+        "Principal": {
+          "AWS": [
+            "797873946194"
+          ]
+        }
+      }
+    ]
+  }

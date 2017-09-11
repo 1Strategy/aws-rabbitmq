@@ -76,17 +76,28 @@ tags = [
   }
 }
 
+resource "aws_s3_bucket" "rabbit_mq_elb_logs" {
+  bucket = "1s-load-balancer-access-logs"
+  policy = "${file("elb_s3_access_policy.json")}"
+
+    tags {
+    Name = "rabbit_mq_elb_logs"
+    Project-ID = "${var.project_id}"
+    Team = "${var.team}"
+  }
+}
+
 resource "aws_elb" "rabbit_elb" {
   name_prefix = "rbtmq-"
   subnets         = ["${var.lb_subnets}"]
   security_groups = ["${aws_security_group.rabbit_lb_sg.id}"]
   internal        = false
 
-  # access_logs {
-  #   bucket        = "foo"
-  #   bucket_prefix = "bar"
-  #   interval      = 60
-  # }
+  access_logs {
+    bucket        = "${aws_s3_bucket.rabbit_mq_elb_logs.id}"
+    bucket_prefix = "rabbitmq"
+    interval      = 60
+  }
 
   listener {
     instance_port     = 5672
