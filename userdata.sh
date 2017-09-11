@@ -23,3 +23,6 @@ rm /tmp/rabbitmq-release-signing-key.asc
 apt-get -qy update
 apt-get -y dist-upgrade 
 apt-get -qy install rabbitmq-server
+
+
+rabbitmq-plugins enable rabbitmq_management
