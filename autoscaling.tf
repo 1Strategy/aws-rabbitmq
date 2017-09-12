@@ -107,10 +107,10 @@ resource "aws_elb" "rabbit_elb" {
   }
 
   listener {
+    lb_port           = 80
+    lb_protocol       = "http"
     instance_port     = 15672
-    instance_protocol = "tcp"
-    lb_port           = 15672
-    lb_protocol       = "tcp"
+    instance_protocol = "http"
   }
 
   health_check {

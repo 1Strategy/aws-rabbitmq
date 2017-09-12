@@ -9,8 +9,8 @@ resource "aws_security_group" "rabbit_lb_sg" {
   }
 
   ingress {
-    from_port   = 15672
-    to_port     = 15672
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -68,11 +68,19 @@ resource "aws_security_group_rule" "rabbitmq_distribution_port" {
   source_security_group_id = "${aws_security_group.rabbit_nodes_sg.id}"
 }
 
-
-resource "aws_security_group_rule" "rabbitmq_alb_forwarding_port" {
+resource "aws_security_group_rule" "rabbitmq_lb_forwarding_port" {
   type = "ingress"
   from_port = 5671
   to_port = 5672
+  protocol = "tcp"
+  security_group_id = "${aws_security_group.rabbit_nodes_sg.id}"
+  source_security_group_id = "${aws_security_group.rabbit_lb_sg.id}"
+}
+
+resource "aws_security_group_rule" "rabbitmq_mgmt_plugin" {
+  type = "ingress"
+  from_port = 15672
+  to_port = 15672
   protocol = "tcp"
   security_group_id = "${aws_security_group.rabbit_nodes_sg.id}"
   source_security_group_id = "${aws_security_group.rabbit_lb_sg.id}"
