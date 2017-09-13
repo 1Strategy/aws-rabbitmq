@@ -48,8 +48,8 @@ resource "aws_launch_configuration" "rabbit_lc" {
 resource "aws_autoscaling_group" "rabbit_asg" {
   name_prefix = "rbtmq-"
   launch_configuration = "${aws_launch_configuration.rabbit_lc.name}"
-  min_size             = 1
-  max_size             = 1
+  min_size             = 3
+  max_size             = 3
   vpc_zone_identifier = "${var.lb_subnets}"
   load_balancers    = ["${aws_elb.rabbit_elb.id}"]
 
