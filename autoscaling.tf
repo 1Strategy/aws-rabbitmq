@@ -23,6 +23,11 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+resource "aws_iam_instance_profile" "rabbit_ip" {
+		    name = "rabbit_ip"		    
+        role = "${aws_iam_role.rabbit_node_role.id}"
+}
+
 resource "aws_launch_configuration" "rabbit_lc" {
   name_prefix = "rbtmq-"
   associate_public_ip_address = false
@@ -31,6 +36,7 @@ resource "aws_launch_configuration" "rabbit_lc" {
   instance_type = "t2.micro"
   key_name = "${var.ec2_keypair}"
   security_groups = ["${aws_security_group.rabbit_nodes_sg.id}"]
+  iam_instance_profile = "${aws_iam_instance_profile.rabbit_ip.id}"
 
   user_data = "${file("userdata.sh")}"
   ebs_block_device {
