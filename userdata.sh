@@ -5,14 +5,6 @@ set -o pipefail
 
 readonly ERLANG_COOKIE="EHLKUCICVURANTZUDLJG"
 
-# set hostname fqdn
-set_fqdn() {
-    local ip_address=`hostname -I`
-    local hostname=`hostname`
-    local fqdn=`curl -s http://169.254.169.254/latest/meta-data/hostname`
-
-    echo "${ip_address} ${fqdn} ${hostname}" >> /etc/hosts
-}
 
 # Create volume for Rabbit messages and queues
 create_rabbit_volume() {
@@ -51,10 +43,6 @@ add_rabbit_mgmt_plugin() {
     rabbitmq-plugins enable rabbitmq_management
 }
 
-set_rabbitmq_longnames() {
-    # Use FQDNs for RabbitMQ clustering
-    echo "USE_LONGNAME=true" >> /etc/rabbitmq/rabbitmq-env.conf
-}
 
 # Set Erlang cookie for RabbitMQ clustering
 set_erlang_cookie() {
@@ -64,28 +52,57 @@ set_erlang_cookie() {
     chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie
 }
 
+download_autocluster_plugin() {
+    cd /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.12/plugins
+    wget https://github.com/rabbitmq/rabbitmq-autocluster/releases/download/0.8.0/autocluster-0.8.0.ez
+    wget https://github.com/rabbitmq/rabbitmq-autocluster/releases/download/0.8.0/rabbitmq_aws-0.8.0.ez
+}
+
+enable_autocluster_plugin() {
+    rabbitmq-plugins enable autocluster --offline
+}
+
+configure_autocluster_plugin() {
+ cat >> /etc/rabbitmq/rabbitmq.config <<EOL
+[
+  {autocluster, [
+    {autocluster_log_level, debug},
+    {backend, aws},
+    {aws_autoscaling, true},
+    {aws_ec2_region, "us-west-2"}
+  ]}
+]. 
+EOL
+}
+
+
 reboot_if_required() {
     if [[ -f "/var/run/reboot-required" ]]; then
         shutdown -r now
     fi
 }
 
+
+
 main() {
-    set_fqdn
     create_rabbit_volume
     add_rabbit_pkg_source
     add_rabbit_gpg_key
     apt_get_upgrade
     install_rabbitmq
     add_rabbit_mgmt_plugin
-    set_rabbitmq_longnames
 
     rabbitmqctl stop
     set_erlang_cookie
+
+    download_autocluster_plugin
+    enable_autocluster_plugin
+    configure_autocluster_plugin
+
     reboot_if_required
 
     # RabbitMQ will start on boot
-    service rabbitmq-server start
+service rabbitmq-server start
 }
 
 main "$@"
