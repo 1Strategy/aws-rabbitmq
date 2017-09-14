@@ -37,12 +37,22 @@ apt_get_upgrade() {
 
 install_rabbitmq() {
     apt-get -qq install rabbitmq-server
+    systemctl enable rabbitmq-server
 }
 
 add_rabbit_mgmt_plugin() {
     rabbitmq-plugins enable rabbitmq_management
 }
 
+modify_nofile_limit() {
+    cd /etc/systemd/system
+    mkdir rabbitmq-server.service.d 
+cat >> /etc/systemd/system/rabbitmq-server.service.d/limits.conf <<EOL 
+[Service]
+LimitNOFILE=400000
+EOL
+    systemctl daemon-reload
+}
 
 # Set Erlang cookie for RabbitMQ clustering
 set_erlang_cookie() {
@@ -63,13 +73,20 @@ enable_autocluster_plugin() {
 }
 
 configure_autocluster_plugin() {
+    EC2_AVAIL_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    EC2_REGION="$(echo ${EC2_AVAIL_ZONE} | sed 's/[a-z]$//')" 
+    
+    
  cat >> /etc/rabbitmq/rabbitmq.config <<EOL
 [
+  {rabbit, [{vm_memory_high_watermark, 0.5},
+  {disk_free_limit, {mem_relative, 1.5}}
+  ]},
   {autocluster, [
     {autocluster_log_level, debug},
     {backend, aws},
     {aws_autoscaling, true},
-    {aws_ec2_region, "us-west-2"}
+    {aws_ec2_region, "${EC2_REGION}"}
   ]}
 ]. 
 EOL
@@ -78,7 +95,7 @@ EOL
 
 reboot_if_required() {
     if [[ -f "/var/run/reboot-required" ]]; then
-        shutdown -r now
+        reboot
     fi
 }
 
@@ -91,10 +108,9 @@ main() {
     apt_get_upgrade
     install_rabbitmq
     add_rabbit_mgmt_plugin
-
+    modify_nofile_limit
     rabbitmqctl stop
     set_erlang_cookie
-
     download_autocluster_plugin
     enable_autocluster_plugin
     configure_autocluster_plugin
@@ -102,7 +118,7 @@ main() {
     reboot_if_required
 
     # RabbitMQ will start on boot
-service rabbitmq-server start
+    service rabbitmq-server start
 }
 
 main "$@"

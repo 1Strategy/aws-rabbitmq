@@ -1,3 +1,6 @@
+# Required: Declaring Variable. 
+variable "ebs_disk_size" {}
+
 data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
   most_recent = true
@@ -41,7 +44,7 @@ resource "aws_launch_configuration" "rabbit_lc" {
   user_data = "${file("userdata.sh")}"
   ebs_block_device {
     device_name = "/dev/sdf"
-    volume_size = 5
+    volume_size = "${var.ebs_disk_size}"
     volume_type = "gp2"
     delete_on_termination = false
   }
