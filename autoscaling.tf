@@ -1,5 +1,7 @@
 # Required: Declaring Variable. 
 variable "ebs_disk_size" {}
+variable "asg_min" {}
+variable "asg_max" {}
 
 data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
@@ -57,8 +59,8 @@ resource "aws_launch_configuration" "rabbit_lc" {
 resource "aws_autoscaling_group" "rabbit_asg" {
   name_prefix = "rbtmq-"
   launch_configuration = "${aws_launch_configuration.rabbit_lc.name}"
-  min_size             = 3
-  max_size             = 3
+  min_size             = "${var.asg_min}"
+  max_size             = "${var.asg_max}"
   vpc_zone_identifier = "${var.lb_subnets}"
   load_balancers    = ["${aws_elb.rabbit_elb.id}"]
 
