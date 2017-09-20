@@ -56,7 +56,7 @@ modify_nofile_limit() {
     mkdir rabbitmq-server.service.d 
 cat >> /etc/systemd/system/rabbitmq-server.service.d/limits.conf <<EOL 
 [Service]
-LimitNOFILE=400000
+LimitNOFILE=10000
 EOL
     systemctl daemon-reload
 }
@@ -125,7 +125,7 @@ main() {
     reboot_if_required
 
     # RabbitMQ will start on boot
-    service rabbitmq-server start
+    systemctl start rabbitmq-server
 }
 
 main "$@"
