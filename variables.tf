@@ -44,3 +44,18 @@ variable "asg_max" {
     type = "string"
     description = "Minimum number of nodes in the Auto-Scaling Group"
 }
+
+variable "elb_name_tag" {
+    type = "string"
+    description = "ELB Tagged name value "
+}
+
+variable "elb_log_s3bucket_name_tag" {
+    type = "string"
+    description = "Tagged name value for S3 Bucket that stores ELB logs "
+}
+
+variable "asg_name_tag" {
+    type = "string"
+    description = "ASG Tagged name value "
+}

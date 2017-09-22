@@ -70,7 +70,7 @@ resource "aws_autoscaling_group" "rabbit_asg" {
 tags = [
     {
       key                 = "Name"
-      value               = "BIDS VXP RabbitMQ node"
+      value               = "${var.asg_name_tag}"
       propagate_at_launch = true
     },
     {
@@ -95,7 +95,7 @@ resource "aws_s3_bucket" "rabbit_mq_elb_logs" {
   policy = "${file("elb_s3_access_policy.json")}"
 
     tags {
-    Name = "rabbit_mq_elb_logs"
+    Name = "${var.elb_log_s3bucket_name_tag}"
     Project-ID = "${var.project_id}"
     Team = "${var.team}"
   }
@@ -141,7 +141,7 @@ resource "aws_elb" "rabbit_elb" {
   connection_draining_timeout = 400
 
     tags {
-    Name = "BIDS VXP RabbitMQ load balancer"
+    Name = "${var.elb_name_tag}"
     Project-ID = "${var.project_id}"
     Team = "${var.team}"
   }
