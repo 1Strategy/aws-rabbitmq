@@ -32,6 +32,10 @@ variable "ebs_disk_size" {
     type = "string"
     description = "EBS volume size (in GB) that is attached to the RabbitMQ node."
 }
+variable "instance_type" {
+    type = "string"
+    description = "Instance size of the RabbitMQ nodes. (i.e. t2.micro)"
+}
 variable "asg_min" {
     type = "string"
     description = "Minimum number of nodes in the Auto-Scaling Group"

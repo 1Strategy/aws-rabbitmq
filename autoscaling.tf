@@ -41,7 +41,7 @@ resource "aws_launch_configuration" "rabbit_lc" {
   associate_public_ip_address = false
   enable_monitoring = false
   image_id      = "${data.aws_ami.ubuntu.id}"
-  instance_type = "t2.micro"
+  instance_type = "${var.instance_type}"
   key_name = "${var.ec2_keypair}"
   security_groups = ["${aws_security_group.rabbit_nodes_sg.id}"]
   iam_instance_profile = "${aws_iam_instance_profile.rabbit_ip.id}"
