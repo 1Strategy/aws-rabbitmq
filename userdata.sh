@@ -70,7 +70,8 @@ set_erlang_cookie() {
 }
 
 download_autocluster_plugin() {
-    cd /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.12/plugins
+    mkdir /usr/lib/rabbitmq/plugins
+    cd /usr/lib/rabbitmq/plugins
     wget https://github.com/rabbitmq/rabbitmq-autocluster/releases/download/0.8.0/autocluster-0.8.0.ez
     wget https://github.com/rabbitmq/rabbitmq-autocluster/releases/download/0.8.0/rabbitmq_aws-0.8.0.ez
 }
